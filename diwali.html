@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diwali Sparkle</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+        /* Base Styles for Night Sky */
+        body {
+            margin: 0;
+            overflow: hidden; 
+            background-color: #000;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            user-select: none;
+            position: relative; /* For absolute positioning of background elements */
+        }
+        canvas {
+            display: block;
+            background-color: transparent; /* Canvas background is now transparent */
+            cursor: crosshair;
+            width: 100%;
+            height: 100%;
+            position: absolute; /* Place canvas over stars/moon/lanterns */
+            z-index: 50;
+        }
+
+        /* --- BACKGROUND ELEMENTS (No Moon) --- */
+        .background-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d001a; /* Very deep purple-blue for a richer night sky */
+            z-index: 1; /* Below the canvas */
+            overflow: hidden;
+        }
+
+        /* Stars */
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 4s ease-in-out infinite alternate;
+            opacity: 0; /* Start hidden */
+            z-index: 2;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Floating Lanterns */
+        .sky-lantern {
+            position: absolute;
+            bottom: -50px; /* Start below screen */
+            width: 30px;
+            height: 45px;
+            background: rgba(255, 120, 0, 0.7); /* Deep Orange */
+            border: 1px solid #ffcc00; /* Golden border */
+            border-radius: 3px;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.4);
+            animation: float-up linear infinite, sway-small 8s ease-in-out infinite alternate;
+            z-index: 3;
+        }
+
+        .sky-lantern::before { /* Top handle */
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 5px;
+            background: #ffcc00;
+        }
+
+        .sky-lantern::after { /* Bottom flame/tassel effect */
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 10px solid #ffaa00; 
+            filter: drop-shadow(0 0 3px #ffeb3b);
+            animation: flame-flicker 0.5s infinite alternate; /* Ensure flame flickers */
+        }
+
+        @keyframes float-up {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100vh); } /* Adjust for actual height */
+        }
+        @keyframes sway-small {
+            0% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(5px) rotate(1deg); }
+            100% { transform: translateX(-5px) rotate(-1deg); }
+        }
+
+        /* --- END BACKGROUND ELEMENTS --- */
+
+        /* --- LOGO STYLES (New) --- */
+        #brandLogo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 120px; /* Adjust as needed */
+            height: auto;
+            z-index: 101; /* Above info box */
+            /* Invert colors for visibility on dark background, and add subtle glow */
+            filter: invert(100%) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+        /* --- END LOGO STYLES --- */
+
+        /* Top Information Box */
+        .info-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 100; /* Above canvas */
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            opacity: 1; 
+            transition: opacity 0.5s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- CENTRAL DIWALI MESSAGE STYLES (Starts hidden) --- */
+        .diwali-message-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 150; /* Above canvas and other decorations */
+            padding: 30px 40px;
+            border-radius: 12px;
+            max-width: 90%;
+            pointer-events: none; /* Allows clicks to go through to canvas */
+            opacity: 0; /* Starts invisible */
+            transition: opacity 1s ease-in; /* Smooth fade-in */
+        }
+        
+        .main-greeting {
+            font-family: 'Great Vibes', cursive;
+            font-size: 5rem;
+            color: #FFCC00; /* Golden Yellow */
+            margin: 0;
+            text-shadow: 0 0 12px #FFCC00, 0 0 25px rgba(255, 153, 0, 0.7), 0 0 40px rgba(255, 153, 0, 0.5);
+            animation: glow 3s ease-in-out infinite alternate;
+            line-height: 1; 
+        }
+        
+        .sub-greeting {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: #FFD700; /* Brighter Gold */
+            margin-top: 15px;
+            font-weight: 700; 
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.5); 
+        }
+
+        .brand-signature { 
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: #ffcc00;
+            margin-top: 20px;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.6); 
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 8px rgba(255, 204, 0, 0.8), 0 0 15px rgba(255, 153, 0, 0.5);
+            }
+            to {
+                text-shadow: 0 0 15px rgba(255, 220, 0, 1), 0 0 30px rgba(255, 180, 0, 0.7);
+            }
+        }
+        /* --- END CENTRAL MESSAGE STYLES --- */
+        
+        /* --- DIYA DECORATION STYLES (VISIBLE) --- */
+        #diyaContainer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-evenly;
+            padding: 0 5%;
+            z-index: 55; /* Higher than canvas */
+            pointer-events: none;
+            padding-bottom: 10px; /* Space from the very bottom */
+        }
+
+        .diya {
+            width: 40px; /* Increased size */
+            height: 20px; /* Increased size */
+            background: #ffaa00; 
+            border-radius: 0 0 20px 20px / 0 0 15px 15px;
+            position: relative;
+            animation: pulse 4s infinite alternate; 
+        }
+
+        /* Diya Wick/Flame */
+        .diya::after {
+            content: '';
+            position: absolute;
+            top: -16px; /* Moved up to be visible */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px; /* Increased size */
+            height: 20px; /* Increased size */
+            background: #ffcc00; 
+            border-radius: 50%;
+            filter: blur(2px);
+            box-shadow: 
+                0 0 15px #ffeb3b, 
+                0 0 30px #ff9800, 
+                0 0 60px rgba(255, 153, 0, 0.9); 
+            animation: flame-flicker 0.5s infinite alternate;
+        }
+
+        /* Diya Wick */
+        .diya::before {
+            content: '';
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 7px;
+            background: #4B0082; 
+            border-radius: 1px;
+            z-index: 1;
+        }
+
+        @keyframes flame-flicker {
+            from {
+                opacity: 0.95;
+                transform: translateX(-50%) scaleY(1.0);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) scaleY(1.1);
+            }
+        }
+        @keyframes pulse {
+            from { background: #ffaa00; }
+            to { background: #ffc266; }
+        }
+        /* --- END DIYA DECORATION STYLES --- */
+        
+        /* FESTIVE BRAND MODAL STYLING (existing) */
+        #brandModalOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #brandModalOverlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #brandModalContent {
+            background-color: #fff; 
+            color: #1a1a2e; 
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 90%;
+            width: 450px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+            border: 4px solid #ffcc00; 
+        }
+        
+        #brandModalOverlay.visible #brandModalContent {
+             transform: scale(1);
+        }
+
+        #brandModalContent h3 {
+            font-size: 2rem;
+            color: #cc4400; 
+            border-bottom: 2px solid #ffcc00;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        #brandModalContent p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .contact-group {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #cccccc;
+        }
+
+        .contact-link {
+            display: block;
+            background: #4B0082; 
+            color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .contact-link:hover {
+            background: #6a00b6;
+        }
+        
+        #closeModalButton {
+            background: #ffcc00; 
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        #closeModalButton:hover {
+            background: #ffaa00;
+            transform: translateY(-2px);
+        }
+
+        /* Mobile adjustments (updated) */
+        @media (max-width: 600px) {
+            #brandModalContent {
+                width: 95%;
+                padding: 20px;
+            }
+            #brandModalContent h3 {
+                font-size: 1.5rem;
+            }
+            #brandModalContent p {
+                font-size: 1rem;
+            }
+            .main-greeting {
+                font-size: 3rem;
+            }
+            .sub-greeting {
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+            .brand-signature { 
+                font-size: 0.9rem;
+            }
+            .sky-lantern {
+                width: 20px;
+                height: 30px;
+            }
+            .sky-lantern::after {
+                bottom: -8px;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 8px solid #ffaa00; 
+            }
+            .diya {
+                width: 25px;
+                height: 12px;
+            }
+            .diya::after {
+                top: -10px; 
+                width: 8px; 
+                height: 12px; 
+            }
+            #brandLogo {
+                width: 90px;
+                top: 15px;
+                left: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Layer with Stars and Floating Lanterns -->
+    <div class="background-elements">
+        <!-- Stars and Sky Lanterns will be generated by JS -->
+    </div>
+
+    <!-- BRAND LOGO (Now using the uploaded file) -->
+
+    <img src= "nd-logo.png" alt="Nexara Designs Logo" id="brandLogo">
+    
+    <!-- Top Information Box -->
+    <div class="info-box" id="infoBox">
+        <span>Click or tap anywhere to start the Diwali celebration!</span>
+    </div>
+    
+    <!-- CENTRAL DIWALI MESSAGE (Starts hidden, fades in on first click) -->
+    <div class="diwali-message-container">
+        <h1 class="main-greeting">Happy Diwali!</h1>
+        <p class="sub-greeting">"Crackers, lights, and digital delights! Wishing you a Diwali full of colors and creativity."</p>
+        <p class="brand-signature">From - Nexara Designs</p>
+    </div>
+    
+    <canvas id="fireworksCanvas"></canvas>
+    
+    <!-- Diya Decoration Container (Prominent) -->
+    <div id="diyaContainer">
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+        <div class="diya"></div>
+    </div>
+    
+    <!-- Festive Brand Modal Overlay -->
+    <div id="brandModalOverlay">
+        <div id="brandModalContent">
+            <h3>Happy Diwali from Tarusha Jain</h3>
+            <p><strong>What We Do:</strong> Web Design | Web Development | Content Creation | Graphic Designing – lighting up your digital world!"</p>
+            
+            <div class="contact-group">
+                <p>Connect with us:</p>
+                <a class="contact-link" href="mailto:info@nexaradesigns.com">Email: info@nexaradesigns.com</a>
+                <a class="contact-link" href="https://www.nexaradesigns.com" target="_blank">Website: www.nexaradesigns.com</a>
+            </div>
+
+            <button id="closeModalButton">Continue to Fireworks!</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        const infoBox = document.getElementById('infoBox');
+        const brandModalOverlay = document.getElementById('brandModalOverlay');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const diwaliMessageContainer = document.querySelector('.diwali-message-container');
+        const backgroundElements = document.querySelector('.background-elements');
+
+        // --- Global Variables ---
+        let fireworks = [];
+        let particles = [];
+        const gravity = 0.03;
+        const friction = 0.98; 
+        let isFirstInteraction = true; 
+
+        // --- Utility Functions ---
+        function randomRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getRandomExplosionType() {
+            const types = ['standard', 'ring', 'star'];
+            return types[randomInt(0, types.length - 1)];
+        }
+        
+        // --- Background Element Generation ---
+        function createStars(count) {
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = star.style.height = `${randomRange(1, 3)}px`;
+                star.style.top = `${randomRange(0, 100)}%`;
+                star.style.left = `${randomRange(0, 100)}%`;
+                star.style.animationDelay = `${randomRange(0, 4)}s`;
+                backgroundElements.appendChild(star);
+            }
+        }
+
+        function createSkyLanterns(count) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => { // Stagger creation
+                    const lantern = document.createElement('div');
+                    lantern.className = 'sky-lantern';
+                    lantern.style.left = `${randomRange(10, 90)}%`; // Random horizontal position
+                    lantern.style.animationDuration = `${randomRange(15, 30)}s`; // Vary speed
+                    lantern.style.animationDelay = `${randomRange(0, 10)}s`; // Stagger start
+                    lantern.style.animationName = `float-up, sway-small`; // Apply both animations
+                    backgroundElements.appendChild(lantern);
+
+                    // Remove after animation to prevent DOM bloat and re-add for continuous loop
+                    lantern.addEventListener('animationiteration', (e) => {
+                        if (e.animationName === 'float-up') {
+                            lantern.remove();
+                            // Recreate a new one immediately for continuous effect
+                            setTimeout(() => createSkyLanterns(1), randomInt(500, 2000));
+                        }
+                    });
+
+                }, i * randomInt(500, 1500)); // Initial staggered delay
+            }
+        }
+
+
+        // --- Classes (Existing) ---
+        class Particle {
+            constructor(x, y, hue, radius = 1.5, decay = randomRange(0.015, 0.05), isRocket = false) {
+                this.x = x;
+                this.y = y;
+                this.isRocket = isRocket;
+                this.radius = radius;
+                this.alpha = 1;
+                this.hue = hue;
+                this.decay = decay;
+                
+                if (this.isRocket) {
+                    this.angle = randomRange(Math.PI / 2 - 0.2, Math.PI / 2 + 0.2);
+                    this.speed = randomRange(4.5, 7.5); 
+                    this.velX = Math.cos(this.angle) * this.speed;
+                    this.velY = -Math.sin(this.angle) * this.speed;
+                } else {
+                    this.angle = randomRange(0, Math.PI * 2);
+                    this.speed = randomRange(2, 12);
+                    this.velX = Math.cos(this.angle) * this.speed;
+                    this.velY = Math.sin(this.angle) * this.speed;
+                }
+            }
+
+            update() {
+                if (!this.isRocket) {
+                    this.velY += gravity;
+                    this.velX *= friction;
+                    this.velY *= friction;
+                    this.alpha -= this.decay;
+                } else {
+                    this.velY += gravity * 0.4;
+                }
+
+                this.x += this.velX;
+                this.y += this.velY;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.closePath();
+
+                let lightness = this.isRocket ? 100 : randomRange(60, 85);
+                let saturation = 100;
+
+                ctx.fillStyle = `hsla(${this.hue}, ${saturation}%, ${lightness}%, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        class Firework {
+            constructor(startX, startY, targetX, targetY, type) {
+                this.startX = startX;
+                this.startY = startY;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.type = type; 
+                
+                this.hue = randomInt(0, 360); 
+                
+                this.angle = Math.atan2(targetY - startY, targetX - startX);
+
+                this.rocket = new Particle(startX, startY, this.hue, 2, 0, true);
+
+                const distance = Math.hypot(targetX - startX, targetY - startX);
+                this.rocket.speed = distance / 50; 
+                this.rocket.velX = Math.cos(this.angle) * this.rocket.speed;
+                this.rocket.velY = Math.sin(this.angle) * this.rocket.speed;
+
+                this.exploded = false;
+            }
+
+            update() {
+                if (!this.exploded) {
+                    this.rocket.update();
+
+                    const distanceToTarget = Math.hypot(this.targetX - this.rocket.x, this.targetY - this.rocket.y);
+
+                    if (distanceToTarget < 20 || this.rocket.velY >= 0) {
+                        this.exploded = true;
+                        this.explode();
+                    }
+                }
+            }
+
+            draw() {
+                if (!this.exploded) {
+                    this.rocket.draw();
+                }
+            }
+
+            explode() {
+                switch (this.type) {
+                    case 'ring':
+                        this.createRingBurst();
+                        break;
+                    case 'star':
+                        this.createStarBurst();
+                        break;
+                    case 'standard':
+                    default:
+                        this.createStandardBurst();
+                        break;
+                }
+            }
+            
+            createStandardBurst() {
+                const particleCount = randomInt(75, 120);
+                for (let i = 0; i < particleCount; i++) {
+                    const scatterHue = (this.hue + randomRange(-20, 20)) % 360; 
+                    particles.push(new Particle(this.rocket.x, this.rocket.y, scatterHue));
+                }
+            }
+
+            createRingBurst() {
+                const particleCount = 80;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (i / particleCount) * Math.PI * 2;
+                    const speed = randomRange(5, 7); 
+                    const p = new Particle(this.rocket.x, this.rocket.y, this.hue, 1.5, randomRange(0.01, 0.03));
+                    p.velX = Math.cos(angle) * speed;
+                    p.velY = Math.sin(angle) * speed;
+                    particles.push(p);
+                }
+            }
+
+            createStarBurst() {
+                const particleCount = 50;
+                for (let i = 0; i < particleCount; i++) {
+                    const scatterHue = (this.hue + randomRange(-30, 30)) % 360; 
+                    const p = new Particle(this.rocket.x, this.rocket.y, scatterHue, 3, randomRange(0.005, 0.01));
+                    p.speed = randomRange(1, 6);
+                    p.velX = Math.cos(p.angle) * p.speed;
+                    p.velY = Math.sin(p.angle) * p.speed;
+                    particles.push(p);
+                }
+            }
+        }
+
+        // --- Core Application Logic ---
+
+        function initializeInteractionState() {
+            isFirstInteraction = false;
+            infoBox.querySelector('span').textContent = 'Touch or click anywhere for realistic crackers!';
+            
+            // NEW: Show the central message smoothly on first interaction
+            diwaliMessageContainer.style.opacity = 1; 
+        }
+        
+        function showBrandModal() {
+            brandModalOverlay.classList.add('visible');
+        }
+        
+        function hideBrandModal() {
+            brandModalOverlay.classList.remove('visible');
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Only clear part of the canvas for firework trails, not the whole background
+            ctx.fillStyle = 'rgba(13, 0, 26, 0.08)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                fireworks[i].update();
+                fireworks[i].draw();
+
+                if (fireworks[i].exploded) {
+                    fireworks.splice(i, 1);
+                }
+            }
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // No need to clear canvas background here, as it's transparent now
+        }
+
+        function handleInteraction(e) {
+            e.preventDefault(); 
+            
+            if (brandModalOverlay.classList.contains('visible')) return;
+
+            const x = e.clientX || (e.touches && e.touches[0].clientX);
+            const y = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const startX = canvas.width / 2;
+            const startY = canvas.height;
+
+            if (isFirstInteraction) {
+                // 1. Initialize State (and show text)
+                initializeInteractionState(); 
+                
+                // 2. Launch first firework (for effect)
+                fireworks.push(new Firework(startX, startY, x, y, 'standard'));
+                
+                // 3. Show modal after a significantly longer delay (6 seconds)
+                setTimeout(showBrandModal, 6000); 
+            } else {
+                const type = getRandomExplosionType();
+                fireworks.push(new Firework(startX, startY, x, y, type)); 
+            }
+        }
+
+        // --- Initialization ---
+        window.onload = function() {
+            resizeCanvas(); 
+            window.addEventListener('resize', resizeCanvas); 
+            
+            closeModalButton.addEventListener('click', hideBrandModal);
+
+            canvas.addEventListener('click', handleInteraction);
+            canvas.addEventListener('touchstart', handleInteraction);
+
+            // Create background elements
+            createStars(100); // Generate 100 stars
+            createSkyLanterns(5); // Start with 5 floating lanterns
+
+            animate(); 
+        };
+    </script>
+</body>
+</html>
